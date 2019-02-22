@@ -1,0 +1,34 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Favorites Heros</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content padding>
+
+  <ion-list *ngIf="favoritesList != 0; else mens qagem_alerta">
+    <ion-list-header>
+      Favorites Heros
+    </ion-list-header>
+
+    <ion-item *ngFor="let favoriteHero of favoritesList" (click)="heroDetails(favoriteHero.id)">
+      <ion-avatar slot="start">
+        <img src="{{favoriteHero.img}}">
+      </ion-avatar>
+      <ion-label>{{favoriteHero.name}}</ion-label>
+    </ion-item>
+  </ion-list>
+
+  <ng-template #mensagem_alerta>
+      <ion-card>
+        <ion-card-content text-center>
+          <p>Não há heróis favoritos</p>
+          <p>Adicione um</p>
+        </ion-card-content>
+      </ion-card>
+  </ng-template>
+
+</ion-content>

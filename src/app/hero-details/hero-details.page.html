@@ -1,0 +1,28 @@
+<ion-header>
+  <ion-toolbar *ngIf="hero">
+    <ion-buttons slot="start">
+        <ion-back-button defaultHref="/"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Informações do Herói</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content padding *ngIf="hero">
+  <ion-card>
+    <ion-img [src]="this.img"></ion-img>
+    <ion-card-content>
+        <ion-card-title>{{this.hero.name}}</ion-card-title>
+        <ion-card-subtitle>Participação em HQs</ion-card-subtitle>
+        <ion-list>
+          <ion-item *ngFor="let serie of seriesArray">
+            <ion-label>{{serie}}</ion-label>
+          </ion-item>
+        </ion-list>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed" (click)="favoritesList(this.hero)">
+      <ion-fab-button color="danger"><ion-icon name="heart"></ion-icon></ion-fab-button>
+  </ion-fab>
+
+</ion-content>
