@@ -1,41 +1,39 @@
 <ion-header color="danger">
   <ion-toolbar>
     <ion-buttons slot="start">
-        <ion-back-button defaultHref="/home"></ion-back-button>
+      <ion-back-button defaultHref="/home"></ion-back-button>
     </ion-buttons>
-    <ion-title>Lista</ion-title>
+    <ion-title>Heróis</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content padding>
   <ion-toolbar>
-      <ion-searchbar animated autocomplete="on" [(ngModel)]="heroi" (ionChange)="filtro()" debounce="1000"></ion-searchbar>
+    <ion-searchbar mode="ios" animated autocomplete="on" [(ngModel)]="searchTerm" debounce="500" (ionChange)="filtro(searchTerm)">
+    </ion-searchbar>
   </ion-toolbar>
   <ion-list>
     <ion-list-header>
       Heros
     </ion-list-header>
-    <ion-item-sliding *ngFor="let hero of herosList" name="item-slider">
 
-      <ion-item (click)="heroDetails(hero.id)">
+    <ion-spinner *ngIf="dataIsLoading" name="crescent"></ion-spinner>
 
+    <div *ngIf="!dataIsLoading">
+
+      <ion-item *ngFor="let hero of filtredHeroes" (click)="heroDetails(hero.id)">
         <ion-avatar slot="start">
           <img src="{{hero.img}}">
         </ion-avatar>
         <ion-label>{{hero.name}}</ion-label>
       </ion-item>
 
-      <ion-item-options side="end">
-        <ion-item-option color="danger" expandable="true"><ion-icon name="heart" (click)="favoritesList(hero)"></ion-icon></ion-item-option>
-      </ion-item-options>
+    </div>
 
-    </ion-item-sliding> 
   </ion-list>
 
-  <ion-infinite-scroll threshold="100px" (ionInfinite)="loadData($event)">
-    <ion-infinite-scroll-content
-      loadingSpinner="bubbles"
-      loadingText="Carregando...">
+  <ion-infinite-scroll (ionInfinite)="loadData($event)">
+    <ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Carregando Heróis...">
     </ion-infinite-scroll-content>
   </ion-infinite-scroll>
 

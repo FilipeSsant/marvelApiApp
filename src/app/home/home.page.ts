@@ -10,7 +10,7 @@ export class HomePage {
   
   constructor(private navCtrl: NavController){}
 
-  listaUsuarios(){
+  listaHerois(){
     this.navCtrl.navigateForward('/lista');
   }
 

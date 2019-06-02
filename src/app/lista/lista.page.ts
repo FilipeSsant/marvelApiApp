@@ -11,16 +11,15 @@ import { Storage } from '@ionic/storage';
 })
 export class ListaPage implements OnInit {
   herosList = [];
-  allHeros = [];
   favoriteHeroes = [];
   filtredHeroes = [];
-  heroi : string = "";
-  searchTerm : string = '';
-  obj : any;
+  searchTerm: string = '';
+  obj: any;
   offset: number;
+  dataIsLoading: boolean;
   limit: number;
   modificador: number;
-  @ViewChild(IonItemSliding) itemSlider : IonItemSliding;
+  @ViewChild(IonItemSliding) itemSlider: IonItemSliding;
 
   page: number;
   @ViewChild(IonInfiniteScroll) infiniteScroll: IonInfiniteScroll;
@@ -31,51 +30,47 @@ export class ListaPage implements OnInit {
     private alertCtrl: AlertController,
     private storage: Storage,
     private loading: LoadingController
-    ) {
- 
+  ) {
+
   }
 
-  ngOnInit() {
+  async ngOnInit() {
     this.offset = 0;
     this.limit = 10;
-    this.getHero();
-    this.getStorageFavoriteHeroes();
+    await this.getHero();
   }
 
-  filtro(){
-    this.filtrarHerois(this.heroi);
-  }
-
-  filtrarHerois(heroi){
-
+  filtro(term) {
     //FILTRAR NA API
-    if(heroi.length >= 3){
+    this.dataIsLoading = true;
+    this.offset = 0;
+    this.limit = 10;
+    if (term != '') {
 
-      this.offset = 0;
 
-      this.herosList = [];
       this.filtredHeroes = [];
-      this.marvelProvider.getFilterHero(heroi, this.offset, this.limit)
-      .then((data:any) => {
+      this.marvelProvider.getFilterHero(term, this.offset, this.limit)
+        .then((data: any) => {
 
-        var results = data.data.results;
-        results.forEach(obj => {
-          let img = obj.thumbnail.path +'.'+ obj.thumbnail.extension
-          this.filtredHeroes.push({id:obj.id, name: obj.name, img: img});
-        });
-        console.log("HEROIS ADICIONADOS NO FILTRO: ",this.filtredHeroes);
-        this.herosList = this.herosList.concat(this.filtredHeroes);
-        this.getHero();
-      })
-      .catch((error:any) => {
-        console.log(error);
-      })
-    }else if(heroi.length == 0){
-      this.herosList = [];
+          var results = data.data.results;
+          results.forEach(obj => {
+            let img = obj.thumbnail.path + '.' + obj.thumbnail.extension
+            this.filtredHeroes.push({ id: obj.id, name: obj.name, img: img });
+          });
+
+
+          this.dataIsLoading = false;
+
+        })
+        .catch((error: any) => {
+          console.log(error);
+          this.dataIsLoading = false;
+        })
+    } else {
+      this.infiniteScroll.disabled = false;
       this.filtredHeroes = [];
-      this.offset = 0;
-      this.herosList = this.herosList.concat(this.allHeros);
-    }  
+      this.getHero();
+    }
 
     //FILTRAR NUMA LISTA LOCAL
     // this.filtredHeroes = this.heroes;
@@ -86,70 +81,8 @@ export class ListaPage implements OnInit {
     // })
   }
 
-  async loadingCreateShow(){
-    const loader = await this.loading.create({
-      message: 'Carregando heróis...'
-    });
-    await loader.present();
-  }
 
-  async loadingDismiss(){
-    await this.loading.dismiss();
-  }
-
-  getStorageFavoriteHeroes(){
-    this.storage.length()
-    .then(tamanho => {
-      if(tamanho != 0){
-        this.storage.get('heroisFavoritos')
-        .then((dados) => {
-          //limpa a array local de herois e popula com os que estão no storage
-          this.favoriteHeroes = [];
-          dados.forEach(heroi => {
-            this.favoriteHeroes.push(heroi);
-          });
-        }),
-        (err) =>{
-          console.log(err);
-        };
-      }  
-    })
-  }
-  
-
-  favoritesList(hero:any){
-      //Armazena os Id's dos herois da lista
-      var idArray = [];
-      //Se a lista estiver vazia não vai haver verificação de id's iguais
-      if(this.favoriteHeroes.length == 0){
-        console.log(hero.id);
-        console.log(`Tamanho da Lista > ${this.favoriteHeroes.length}`);
-        this.favoriteHeroes.push(hero);
-      }else{
-        //Se a lista ja estiver populada ele verifica se há heróis repetidos
-        console.log(`Tamanho da Lista > ${this.favoriteHeroes.length}`);
-        console.log(this.favoriteHeroes);
-        //Percorre a lista de herois pegando os id's
-        for(var i = 0; i < this.favoriteHeroes.length; i++){
-          idArray.push(this.favoriteHeroes[i].id);
-        } 
-        //E verifica se há id's iguais
-        //com o hero.id pegado da lista original
-        var exists = idArray.includes(hero.id);
-        if(exists == true){
-          //se existe na array criada ele mostra um alerta
-          this.openAlert();
-          console.log("Existe? -> "+exists);
-        }else{
-          //se ainda não existe ele adiciona na lista
-          this.favoriteHeroes.push(hero);
-          console.log("Existe? -> "+exists);
-        }
-      }
-      this.storage.set('heroisFavoritos',this.favoriteHeroes);
-  }
-
-  async openAlert(){
+  async openAlert() {
 
     const alert = await this.alertCtrl.create({
       header: "Herói Repetido",
@@ -159,67 +92,72 @@ export class ListaPage implements OnInit {
     return alert.present();
   }
 
-  getHero(){
-    console.log("TAMANHO DA LISTA DE HEROIS FILTRADOS: ",this.filtredHeroes.length);
-    if(this.filtredHeroes.length == 0){
-      this.marvelProvider.getAllHeros(this.offset, this.limit)
-      .then((data:any) => {
+  getHero() {
+    if (!this.infiniteScroll.complete) {
+      this.dataIsLoading = true;
+    }
+    this.marvelProvider.getAllHeros(this.offset, this.limit)
+      .then((data: any) => {
 
         this.herosList = [];
         this.obj = data.data.results;
         this.offset = data.data.offset;
-        for(let i = 0; i < this.obj.length; i++){
-          let img = this.obj[i].thumbnail.path +'.'+ this.obj[i].thumbnail.extension
-          this.allHeros.push({id:this.obj[i].id, name: this.obj[i].name, img: img});
+        for (let i = 0; i < this.obj.length; i++) {
+          let img = this.obj[i].thumbnail.path + '.' + this.obj[i].thumbnail.extension
+          this.herosList.push({ id: this.obj[i].id, name: this.obj[i].name, img: img });
         }
-        
-        this.herosList = this.herosList.concat(this.allHeros);
+
+        this.filtredHeroes.push(...this.herosList);
         this.infiniteScroll.complete();
-        console.log("TODOS: ",this.herosList);
+        this.dataIsLoading = false;
+        console.log("TODOS: ", this.herosList);
+        console.log("TODOS 2: ", this.filtredHeroes);
+
       })
-      .catch((error:any) => {
+      .catch((error: any) => {
         console.log(error.error);
+        this.dataIsLoading = false;
       })
-    }else{
-      if(this.offset != 0){
-        this.loadMoreFiltredHeroes();
-      }
-    }
   }
 
-  loadMoreFiltredHeroes(){
-    console.log("OFFSET DA PESQUISA",this.offset);
-  
-    this.loadingCreateShow();
-    this.marvelProvider.getFilterHero(this.heroi, this.offset, this.limit)
-      .then((data:any) => {
+  loadMoreFiltredHeroes() {
+    console.log("OFFSET DA PESQUISA", this.offset);
 
-        this.herosList = [];
+    this.marvelProvider.getFilterHero(this.searchTerm, this.offset, this.limit)
+      .then((obj: any) => {
 
-        var results = data.data.results;
-        results.forEach(obj => {
-          let img = obj.thumbnail.path +'.'+ obj.thumbnail.extension
-          this.filtredHeroes.push({id:obj.id, name: obj.name, img: img});
-        });
-        this.herosList = this.herosList.concat(this.filtredHeroes);
-        this.loadingDismiss();
+        let count = obj.data.count;
+        if (count == 0) {
+          this.infiniteScroll.disabled = true;
+        }else{
+          var results = obj.data.results;
+          results.forEach(obj => {
+            let img = obj.thumbnail.path + '.' + obj.thumbnail.extension
+            this.filtredHeroes.push({ id: obj.id, name: obj.name, img: img });
+          });
+          this.herosList = this.herosList.concat(this.filtredHeroes);
+        }
+
+
+
       })
-      .catch((error:any) => {
-        this.loading.dismiss();
-        console.log(error);
+      .catch((error: any) => {
       })
 
-    console.log("FILTRADOS: ",this.herosList);
   }
 
-  heroDetails(id:number){
+  heroDetails(id: number) {
     this.navCtrl.navigateForward(`/hero-details/${id}`);
   }
-  
-  loadData(event){
-    if(this.infiniteScroll.complete){
-        console.log("OFFSET",this.offset = this.limit + this.offset);
+
+  loadData(event) {
+    if (this.infiniteScroll.complete) {
+      console.log("OFFSET", this.offset = this.limit + this.offset);
+      if (this.searchTerm == '') {
         this.getHero();
+      } else {
+        this.loadMoreFiltredHeroes();
+      }
     }
   }
 

@@ -16,19 +16,12 @@ export class HeroisFavoritosPage implements OnInit {
     private activatedRoute: ActivatedRoute,
     private storage: Storage,
     private navCtrl: NavController) { 
-      this.storage.length().then(tamanho =>{
-        if(tamanho != 0){
-          this.storage.get('heroisFavoritos')
-          .then((dados) => {
-            dados.forEach(heroi => {
-              this.favoritesList.push(heroi);
-            });
-          }),
-          (err) =>{
-            console.log(err);
-          };
-        }
-      })
+      if(localStorage.getItem('heroisFavoritos')){
+        this.favoritesList.push(...JSON.parse(localStorage.getItem('heroisFavoritos')));
+        console.log(this.favoritesList);
+      }else{
+        
+      }
   }
 
   heroDetails(id:number){

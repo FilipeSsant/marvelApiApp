@@ -16,7 +16,7 @@
 
     <ion-item *ngFor="let favoriteHero of favoritesList" (click)="heroDetails(favoriteHero.id)">
       <ion-avatar slot="start">
-        <img src="{{favoriteHero.img}}">
+        <img src="{{favoriteHero.thumbnail.path}}.{{favoriteHero.thumbnail.extension}}">
       </ion-avatar>
       <ion-label>{{favoriteHero.name}}</ion-label>
     </ion-item>

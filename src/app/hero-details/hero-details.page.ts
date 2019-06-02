@@ -14,6 +14,8 @@ export class HeroDetailsPage implements OnInit {
   seriesArray = [];
   img: any;
   id: any;
+  isFavorite: boolean = false;
+  heroisFavoritos: Array<any> = [];
 
   constructor(private marvelProvider: MarvelApiService,
     private activatedRoute: ActivatedRoute) { 
@@ -22,6 +24,15 @@ export class HeroDetailsPage implements OnInit {
   ngOnInit() {
     this.id = this.activatedRoute.snapshot.paramMap.get('id');
     this.getHero();
+    if(localStorage.getItem("heroisFavoritos")){
+      this.heroisFavoritos = JSON.parse(localStorage.getItem("heroisFavoritos"));
+      console.log("HEROIS FAVORITOS", this.heroisFavoritos);
+      this.heroisFavoritos.forEach(heroiFiltrado => {
+        if(heroiFiltrado.id == this.id){
+          this.isFavorite = true;
+        }
+      });
+    }
   }
 
   getHero(){
@@ -44,6 +55,17 @@ export class HeroDetailsPage implements OnInit {
     .catch((error:any) => {
       console.log(error);
     })
+  }
+
+  async favoritesList(hero){
+    this.isFavorite = await true;
+    console.log(hero);
+    if(localStorage.getItem("heroisFavoritos")){
+      await this.heroisFavoritos.push(hero);
+      await localStorage.setItem("heroisFavoritos", JSON.stringify(this.heroisFavoritos));
+    }else{
+      await localStorage.setItem("heroisFavoritos", JSON.stringify([hero]));
+    }  
   }
 
 }

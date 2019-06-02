@@ -21,8 +21,8 @@
     </ion-card-content>
   </ion-card>
 
-  <ion-fab vertical="bottom" horizontal="end" slot="fixed" (click)="favoritesList(this.hero)">
-      <ion-fab-button color="danger"><ion-icon name="heart"></ion-icon></ion-fab-button>
+  <ion-fab  vertical="bottom" horizontal="end" slot="fixed">
+      <ion-fab-button [disabled]="isFavorite"  (click)="favoritesList(this.hero)" color="danger"><ion-icon name="heart"></ion-icon></ion-fab-button>
   </ion-fab>
 
 </ion-content>
